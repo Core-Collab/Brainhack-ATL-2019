@@ -13,7 +13,7 @@ from PARAMS import *
 
 
 EVAL_EVERY_N_STEPS = 20
-EVAL_STEPS = 3
+EVAL_STEPS = 2
 
 NUM_CLASSES = 2
 NUM_CHANNELS = 1
@@ -48,12 +48,13 @@ def model_fn(features, labels, mode, params):
         features['x'],
         num_res_units=2,
         num_classes=NUM_CLASSES,
-        filters=(16, 32, 64, 128, 256, 512),
+        filters=(4, 8, 16, 32, 64, 128),
         strides=((1, 1, 1), (2, 2, 2), (2, 2, 2), (2, 2, 2), (2, 2, 2), (2, 2, 2)),
         mode=mode,
         kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
 
     # 1.1 Generate predictions only (for `ModeKeys.PREDICT`)
+    net_output_ops.update({"features": tf.get_default_graph().get_tensor_by_name('pool/global_avg_pool:0')})
     if mode == tf.estimator.ModeKeys.PREDICT:
         return tf.estimator.EstimatorSpec(
             mode=mode,
@@ -63,16 +64,23 @@ def model_fn(features, labels, mode, params):
     # 2. set up a loss function
     one_hot_labels = tf.reshape(tf.one_hot(labels['y'], depth=NUM_CLASSES), [-1, NUM_CLASSES])
 
-    loss = tf.losses.softmax_cross_entropy(
-        onehot_labels=one_hot_labels,
-        logits=net_output_ops['logits'])
+    acc = tf.metrics.accuracy
+    prec = tf.metrics.precision
+    acc_result, acc_update = acc(labels['y'], net_output_ops['y_'])
+    prec_result, prec_update = prec(labels['y'], net_output_ops['y_'])
+    tf.summary.scalar("accuracy_train", acc_result)
+    tf.summary.scalar("precision_train", prec_result)
+    with tf.control_dependencies([acc_update, prec_update]):
+        loss = tf.losses.softmax_cross_entropy(
+            onehot_labels=one_hot_labels,
+            logits=net_output_ops['logits'])
+    tf.summary.scalar("loss", loss)
 
     # 3. define a training op and ops for updating moving averages (i.e. for
     # batch normalisation)
     global_step = tf.train.get_global_step()
     optimiser = tf.train.AdamOptimizer(
-        learning_rate=params["learning_rate"],
-        epsilon=1e-5)
+        learning_rate=params["learning_rate"])
 
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     with tf.control_dependencies(update_ops):
@@ -82,15 +90,13 @@ def model_fn(features, labels, mode, params):
     my_image_summaries = {}
     my_image_summaries['feat_t1'] = features['x'][0, 91, :, :, 0]
 
-    expected_output_size = [1, RESIZE_SIZE[0], RESIZE_SIZE[1], 1]  # [B, W, H, C]
+    expected_output_size = [1, RESIZE_SIZE[1], RESIZE_SIZE[0], 1]  # [B, W, H, C]
     [tf.summary.image(name, tf.reshape(image, expected_output_size))
      for name, image in my_image_summaries.items()]
 
     # 4.2 (optional) track the rmse (scaled back by 100, see reader.py)
-    acc = tf.metrics.accuracy
-    prec = tf.metrics.precision
-    eval_metric_ops = {"accuracy": acc(labels['y'], net_output_ops['y_']),
-                       "precision": prec(labels['y'], net_output_ops['y_'])}
+    eval_metric_ops = {"accuracy_val": acc(labels['y'], net_output_ops['y_']),
+                       "precision_val": prec(labels['y'], net_output_ops['y_'])}
 
     # 5. Return EstimatorSpec object
     return tf.estimator.EstimatorSpec(mode=mode,
@@ -113,6 +119,7 @@ def train(args):
         keep_default_na=False,
         na_values=[]).as_matrix()
 
+    # 3300
     train_filenames = all_filenames[:3300]
     val_filenames = all_filenames[3300:]
 
@@ -157,6 +164,12 @@ def train(args):
     # Hooks for validation summaries
     val_summary_hook = tf.contrib.training.SummaryAtEndHook(
         os.path.join(args.model_path, 'eval'))
+    train_summary_hook = tf.contrib.training.SummaryAtEndHook(
+        os.path.join(args.model_path, 'train'))
+    # train_summary_hook = tf.train.SummarySaverHook(save_steps=1,
+    #                                                output_dir=os.path.join(args.model_path, 'train'),
+    #                                                summary_op=tf.summary.)
+
     step_cnt_hook = tf.train.StepCounterHook(every_n_steps=EVAL_EVERY_N_STEPS,
                                              output_dir=args.model_path)
 
@@ -165,7 +178,7 @@ def train(args):
         for _ in tqdm(range(MAX_STEPS // EVAL_EVERY_N_STEPS)):
             nn.train(
                 input_fn=train_input_fn,
-                hooks=[train_qinit_hook, step_cnt_hook],
+                hooks=[train_qinit_hook, step_cnt_hook, train_summary_hook],
                 steps=EVAL_EVERY_N_STEPS)
 
             if args.run_validation:
@@ -173,9 +186,10 @@ def train(args):
                     input_fn=val_input_fn,
                     hooks=[val_qinit_hook, val_summary_hook],
                     steps=EVAL_STEPS)
-                print('Step = {}; val loss = {:.5f};'.format(
+                print('Step = {}; val loss = {:.5f}; val acc = {:.5f}'.format(
                     results_val['global_step'],
-                    results_val['loss']))
+                    results_val['loss'],
+                    results_val['accuracy_val']))
 
     except KeyboardInterrupt:
         pass
