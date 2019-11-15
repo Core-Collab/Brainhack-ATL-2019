@@ -13,7 +13,7 @@ import numpy as np
 import os
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
-samples = 3500
+samples = 3620
 num_features = 512 # dimension of latent vector
 train_percent = 0.8 # used when splitting data into train and test sets
 good_percent = 0.8 # used to determine how much data is 'good'
@@ -35,25 +35,29 @@ features[labels == 1, :] += 4 * (2 * np.random.rand(num_features) - 1)
 np.savetxt('./data.csv', features, delimiter=',')
 np.savetxt('./labels.csv', labels, delimiter='.')
 
-def get_model(model_name = 'random_forest'):
+def get_model(model_name):
     if model_name == 'random_forest':
-        return RandomForestClassifier(n_estimators=100, random_state=0)
+        return RandomForestClassifier(n_estimators=50, random_state=0)
     elif model_name == 'ada_boost':
-        return AdaBoostClassifier(n_estimators=100)
+        return AdaBoostClassifier(n_estimators=50)
     elif model_name == 'gradient_boost':
-        return GradientBoostingClassifier(n_estimators=100)
-    elif model_name == 'kmeans':
-        return KMeans(n_clusters=2)
+        return GradientBoostingClassifier(n_estimators=50)
     elif model_name == 'knearest':
         return KNeighborsClassifier(n_neighbors=3)
+    '''elif model_name == 'kmeans':
+        return KMeans(n_clusters=2)'''
 
-def feature_classifier(data_filename = './data.csv', labels_filename = './labels.csv', train_percent = 0.8, model_name = 'random_forest', model_filename = './my_model.clf', do_pca = 1, components = 2):
+def feature_classifier(data_filename, labels_filename, model_name, model_filename, train_percent = 0.999, do_pca = 1, components = 2):
     # Read in data and labels
     my_features = np.genfromtxt(data_filename, delimiter=',')
     my_labels = np.genfromtxt(labels_filename, delimiter=',')
     # Get model
     model = get_model(model_name)
     Xtrain, Xtest, ytrain, ytest = train_test_split(my_features, my_labels, train_size=train_percent)
+    Xtrain = np.nan_to_num(Xtrain)
+    Xtest = np.nan_to_num(Xtest)
+    ytrain = np.nan_to_num(ytrain)
+    ytest = np.nan_to_num(ytest)
     if do_pca == 1:
         pca = PCA(components)
         model = make_pipeline(pca, model)
@@ -74,4 +78,5 @@ def clf_predict(data_filename = './data.csv', model_filename = './my_model.clf')
     model = pickle.load(open(model_filename, 'rb'))
 
 
-feature_classifier()
+feature_classifier(data_filename = './siamese_embeds.csv', labels_filename = './siamese_labels.csv', model_name = 'knearest', model_filename = './siamese_kn.clf')
+#feature_classifier(data_filename = './softmax_embeds.csv', labels_filename = './softmax_labels.csv', model_name = 'knearest', model_filename = './softmax_kn.clf')
