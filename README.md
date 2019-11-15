@@ -14,6 +14,13 @@ Scikit-learn: pip install sklearn
 Pandas: pip install pandas
 NumPy: pip install numpy
 DLTK: pip install dltk
+TQDM: pip install tqdm
+Jupyter: pip install jupyter
+Pytorch: pip install pytorch
+Pytorch Vision: pip install torch vision
+SciPy: pip install scipy
+Matplotlib: pip install matplotlib
+PIL: pip install pillow
 ```
 
 ### Installing
