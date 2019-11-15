@@ -70,13 +70,17 @@ def feature_classifier(data_filename, labels_filename, model_name, model_filenam
     print('Accuracy =', accuracy_score(ytest, y))
     print('Confusion matrix: \n', confusion_matrix(ytest, y))
 
-def clf_predict(data_filename = './data.csv', model_filename = './my_model.clf'):
+def clf_predict(data_filename, model_filename):
     # Returns an array of predicted labels
     # Read in data
     X = np.genfromtxt(data_filename, delimiter=',')
     # Load model
     model = pickle.load(open(model_filename, 'rb'))
+    y = model.predict(X)
+    print(y)
 
 
-feature_classifier(data_filename = './siamese_embeds.csv', labels_filename = './siamese_labels.csv', model_name = 'knearest', model_filename = './siamese_kn.clf')
+#feature_classifier(data_filename = './siamese_embeds.csv', labels_filename = './siamese_labels.csv', model_name = 'knearest', model_filename = './siamese_kn.clf')
 #feature_classifier(data_filename = './softmax_embeds.csv', labels_filename = './softmax_labels.csv', model_name = 'knearest', model_filename = './softmax_kn.clf')
+
+clf_predict(data_filename = './softmax_embeds.csv', model_filename = './softmax_grad.clf')
