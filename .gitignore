@@ -1,3 +1,5 @@
 __pycache__
 *.clf
 new_backup3/*
+.DS_Store
+
