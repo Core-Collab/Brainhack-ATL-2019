@@ -14,14 +14,11 @@ Scikit-learn: pip install sklearn
 Pandas: pip install pandas
 NumPy: pip install numpy
 DLTK: pip install dltk
-
 ```
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
+A step by step series of examples that tell you how to get a development env running. Say what the steps will be
 
 ```
 Give the example
