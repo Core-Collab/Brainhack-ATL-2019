@@ -82,5 +82,6 @@ def clf_predict(data_filename, model_filename):
 
 #feature_classifier(data_filename = './siamese_embeds.csv', labels_filename = './siamese_labels.csv', model_name = 'knearest', model_filename = './siamese_kn.clf')
 #feature_classifier(data_filename = './softmax_embeds.csv', labels_filename = './softmax_labels.csv', model_name = 'knearest', model_filename = './softmax_kn.clf')
+feature_classifier(data_filename = './autoenc_embeds.csv', labels_filename = './softmax_labels.csv', model_name = 'knearest', model_filename = './autoenc_kn.clf')
 
-clf_predict(data_filename = './softmax_embeds.csv', model_filename = './softmax_grad.clf')
+#clf_predict(data_filename = './softmax_embeds.csv', model_filename = './softmax_grad.clf')
