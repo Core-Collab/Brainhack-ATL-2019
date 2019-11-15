@@ -9,65 +9,36 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 ```
-Tensorflow: pip install tensorflow-gpu==1.14
-Scikit-learn: pip install sklearn
-Pandas: pip install pandas
-NumPy: pip install numpy
-DLTK: pip install dltk
-TQDM: pip install tqdm
-Jupyter: pip install jupyter
-Pytorch: pip install pytorch
-Pytorch Vision: pip install torch vision
-SciPy: pip install scipy
-Matplotlib: pip install matplotlib
-PIL: pip install pillow
+pip install tensorflow-gpu==1.14
+pip install sklearn
+pip install pandas
+pip install numpy
+pip install dltk
+pip install tqdm
+pip install jupyter
+pip install torch
+pip install torchvision
+pip install scipy
+pip install scikit-learn
+pip install matplotlib
+pip install pillow
 ```
 
-### Installing
+### A small fix
 
-A step by step series of examples that tell you how to get a development env running. Say what the steps will be
+You will need to fix your DLTK. We have included the edited file, `abstract_reader.py`. 
+Simply run something like `cp abstract_reader.py /home/user/anaconda2/envs/env_name/lib/python3.6/dltk/io/`
 
-```
-Give the example
-```
 
-And repeat
+### Paths to change
 
-```
-until finished
-```
+Our main runfile is `small_mains.py`. This has a call to the feature embedder, which needs fixed files. On line 11 you'll see:
+```call_zac(txt_path='/media/data/Track_2/test_txt.txt', model_path='/media/data/models/brain/sl_resnet3d/new_backup3/')```
+`txt_path` should be a path to the txt with absolute paths (separated by a newline, no commas) and `model_path` should be `new_backup3` in the repo where this is downloaded.
 
-End with an example of getting some data out of the system or using it for a little demo
+### Running
 
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
-## Built With
-
-* 
-* 
-* 
+In a terminal, just run `python small_mains.py` and you'll see a ton of text dumped out. When the process completes, a new text file `small_scores.txt` will contain all predictions, continuous values between 0-1.
 
 ## Authors
 

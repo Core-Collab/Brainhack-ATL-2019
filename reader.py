@@ -28,15 +28,16 @@ def read_fn(file_references, mode, params=None):
         return flip(img, axis=2)
 
     for f in file_references:
-        subject_id = f[0]
+        subject_id = f
         print(subject_id)
 
-        data_path = '/media/data/Track_2/'
+        # data_path = '/media/data/Track_2/'
 
         # Read the image nii with sitk
-        t1_fn = os.path.join(data_path, '{}.nii.gz'.format(subject_id))
-        if not os.path.exists(t1_fn):
-            continue
+        # t1_fn = os.path.join(data_path, '{}.nii.gz'.format(subject_id))
+        t1_fn = subject_id
+        # print(t1_fn)
+        assert os.path.exists(t1_fn)
 
         t1 = sitk.GetArrayFromImage(sitk.ReadImage(str(t1_fn)))
 
@@ -47,33 +48,34 @@ def read_fn(file_references, mode, params=None):
         images = np.expand_dims(t1, axis=-1).astype(np.float32)
 
         # Parse the labels
-        gt_label = np.int32(f[1])
-        y = gt_label
-
         if mode == tf.estimator.ModeKeys.PREDICT:
-            yield {'features': {'x': images}, 'img_id': subject_id, 'labels': {'y': y}}
+            yield {'features': {'x': images}, 'img_id': subject_id, 'labels': {'y': 1}}
 
-        # Augment if used in training mode
-        if mode == tf.estimator.ModeKeys.TRAIN:
-            if random.random() < 0.5:
-                images = _augment(images)
-
-        # Check if the reader is supposed to return training examples or full
-        # images
-        if params['extract_examples']:
-            images = extract_random_example_array(
-                image_list=images,
-                example_size=params['example_size'],
-                n_examples=params['n_examples'])
-
-            for e in range(params['n_examples']):
-                yield {'features': {'x': images[e].astype(np.float32)},
-                       'labels': {'y': y.astype(np.float32)},
-                       'img_id': subject_id}
-
-        else:
-            yield {'features': {'x': images},
-                   'labels': {'y': y.astype(np.float32)},
-                   'img_id': subject_id}
+        # else:
+        #     gt_label = np.int32(f[1])
+        #     y = gt_label
+        #
+        #     # Augment if used in training mode
+        #     if mode == tf.estimator.ModeKeys.TRAIN:
+        #         if random.random() < 0.5:
+        #             images = _augment(images)
+        #
+        #     # Check if the reader is supposed to return training examples or full
+        #     # images
+        #     if params['extract_examples']:
+        #         images = extract_random_example_array(
+        #             image_list=images,
+        #             example_size=params['example_size'],
+        #             n_examples=params['n_examples'])
+        #
+        #         for e in range(params['n_examples']):
+        #             yield {'features': {'x': images[e].astype(np.float32)},
+        #                    'labels': {'y': y.astype(np.float32)},
+        #                    'img_id': subject_id}
+        #
+        #     else:
+        #         yield {'features': {'x': images},
+        #                'labels': {'y': y.astype(np.float32)},
+        #                'img_id': subject_id}
 
     return

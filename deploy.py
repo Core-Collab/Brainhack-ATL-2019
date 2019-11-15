@@ -26,6 +26,57 @@ READER_PARAMS = {'n_examples': 1,
 # N_VALIDATION_SUBJECTS = 28
 
 
+def call_zac(txt_path, model_path):
+    # Read in the csv with the file names you would want to predict on
+    filepath = txt_path
+    with open(filepath) as fp:
+        all_filenames = fp.readlines()
+    file_names = [x.strip() for x in all_filenames]
+    # file_names = np.loadtxt(txt_path, dtype=np.str)
+    # file_names = pd.read_csv(
+    #     '/media/data/Track_2/New_Labels_For_Track_2.csv',
+    #     dtype=object,
+    #     keep_default_na=False,
+    #     na_values=[]).as_matrix()
+
+    # We trained on the first 4 subjects, so we predict on the rest
+    # file_names = file_names[-N_VALIDATION_SUBJECTS:]
+
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    nn = tf.estimator.Estimator(
+        model_fn=model_fn,
+        model_dir=model_path,
+        params={"learning_rate": 1e-3},
+        config=tf.estimator.RunConfig(session_config=config))
+
+    reader_params = {'n_examples': 1,
+                     'example_size': RESIZE_SIZE,
+                     'extract_examples': True}
+    reader_example_shapes = {'features': {'x': reader_params['example_size'] + [1]},
+                             'labels': {'y': []}}
+    reader = Reader(read_fn,
+                    {'features': {'x': tf.float32},
+                     'labels': {'y': tf.int32}})
+    input_fn, qinit_hook = reader.get_inputs(
+        file_references=file_names,
+        mode=tf.estimator.ModeKeys.PREDICT,
+        example_shapes=reader_example_shapes,
+        batch_size=1,
+        shuffle_cache_size=1,
+        params=reader_params)
+
+    features_to_save = []
+    labels_to_save = []
+    for i in tqdm(nn.predict(input_fn, hooks=[qinit_hook])):
+        features_to_save.append(i['features'])
+        labels_to_save.append(i['y_'])
+
+    return np.array(features_to_save), np.array(labels_to_save)
+    # np.savetxt('embeds.csv', np.array(features_to_save), delimiter=',', newline='\n')
+    # np.savetxt('labels.csv', np.array(labels_to_save), delimiter=',', newline='\n')
+
+
 def predict(args):
     # Read in the csv with the file names you would want to predict on
     file_names = pd.read_csv(
@@ -122,6 +173,11 @@ def predict(args):
 
 
 if __name__ == '__main__':
+    features_final, labels_final = call_zac("/media/data/Track_2/test_txt.txt", "/media/data/models/brain/sl_resnet3d/new_backup3/")
+    print(features_final.shape)
+    print(labels_final)
+    import sys
+    sys.exit()
     # Set up argument parser
     parser = argparse.ArgumentParser(
         description='Preprocessing Quality Control')
