@@ -9,8 +9,11 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 ```
-Tensorflow: pip install tensorflow
+Tensorflow: pip install tensorflow-gpu==1.14
 Scikit-learn: pip install sklearn
+Pandas: pip install pandas
+NumPy: pip install numpy
+DLTK: pip install dltk
 
 ```
 
