@@ -67,7 +67,7 @@ Add additional notes about how to deploy this on a live system
 
 ## Authors
 
-* **Zach Chen**
+* **Letian Chen**
 * **Andrew Silva**
 * **Manisa Natarajan**
 * **Danny Comer**
