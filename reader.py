@@ -2,6 +2,7 @@ import SimpleITK as sitk
 import tensorflow as tf
 import os
 import numpy as np
+import random
 
 from dltk.io.augmentation import extract_random_example_array, flip
 from dltk.io.preprocessing import *
@@ -28,6 +29,7 @@ def read_fn(file_references, mode, params=None):
 
     for f in file_references:
         subject_id = f[0]
+        print(subject_id)
 
         data_path = '/media/data/Track_2/'
 
@@ -44,16 +46,17 @@ def read_fn(file_references, mode, params=None):
 
         images = np.expand_dims(t1, axis=-1).astype(np.float32)
 
-        if mode == tf.estimator.ModeKeys.PREDICT:
-            yield {'features': {'x': images}, 'img_id': subject_id}
-
         # Parse the labels
         gt_label = np.int32(f[1])
         y = gt_label
 
+        if mode == tf.estimator.ModeKeys.PREDICT:
+            yield {'features': {'x': images}, 'img_id': subject_id, 'labels': {'y': y}}
+
         # Augment if used in training mode
         if mode == tf.estimator.ModeKeys.TRAIN:
-            images = _augment(images)
+            if random.random() < 0.5:
+                images = _augment(images)
 
         # Check if the reader is supposed to return training examples or full
         # images
