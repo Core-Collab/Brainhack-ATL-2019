@@ -9,19 +9,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 ```
-pip install tensorflow-gpu==1.14
-pip install sklearn
-pip install pandas
-pip install numpy
-pip install dltk
-pip install tqdm
-pip install jupyter
-pip install torch
-pip install torchvision
-pip install scipy
-pip install scikit-learn
-pip install matplotlib
-pip install pillow
+pip install tensorflow-gpu==1.14 sklearn pandas numpy dltk tqdm jupyter torch torchvision scipy scikit-learn matplotlib pillow
 ```
 
 ### A small fix
@@ -38,7 +26,42 @@ Our main runfile is `small_mains.py`. This has a call to the feature embedder, w
 
 ### Running
 
-In a terminal, just run `python small_mains.py` and you'll see a ton of text dumped out. When the process completes, a new text file `small_scores.txt` will contain all predictions, continuous values between 0-1.
+In a terminal, just run `python small_mains.py` and you'll see a ton of text dumped out. When the process completes, a new text file `small_scores.txt` will contain all predictions, continuous values between 0-1. Of course, this requires paths to be set appropriately and you need to have the necessary data
+
+### What does each file do?
+
+###### small_mains.py
+The main runfile for our project, this file calls the 3D CNN to give us embeddings and scores, then uses those embeddings to get more scores, and finally averages over all of the scores for a final score that is then used in our evaluation. Being scored, you might say.
+
+###### classifier.py
+The sklearn training/saving/testing script, used for the classical ML estimators.
+
+###### deploy.py
+This script actually loads in the trained model and the given fMRI data, creating embeddings and predicting labels for a batch of inputs. It is called from the main script to generate embeddings for classical models and to give scores for final output.
+
+###### train.py
+The main training file for the 3D CNN, this creates the model in TensorFlow, loads in data from the reader, and begins to learn good vs. bad fMRI.
+
+###### reader.py
+Contains a Python read function for interfacing with `.nii.gz` filetypes, returning image data, id, and label.
+
+###### PARAMS.py
+Just houses a list
+
+###### dataload_test.py
+An example dataloader for TensorFlow.
+
+###### utils.py
+A utility file used in the dataload_test script.
+
+###### clean_data.ipynb
+Simple iPython notebook to create symlinks for all labeled examples in the dataset. If the label is "good", symlink the example to a "good" directory, and if it's bad then symlink it to a "bad" directory. Not necessary for the runfiles here, but a simple and potentially useful scipt.
+
+###### pytorch_dataloader.ipynb
+Again just a useful script that you won't need for this to run. If you want to get up and running with PyTorch later, this example data loader might be useful.
+
+###### abstract_reader.py
+Necessary fix to DLTK, see above.
 
 ## Authors
 
@@ -50,4 +73,4 @@ In a terminal, just run `python small_mains.py` and you'll see a ton of text dum
 
 ## Acknowledgments
 
-* BrainHack ATL for hosting the neuroscience hackathon and providing us data
+Thanks to the BrainHack ATL team for organizing the event, providing us with data/labels/food, and to the myriad of hosts who answered all of our questions and helped us understand the problem more clearly!
