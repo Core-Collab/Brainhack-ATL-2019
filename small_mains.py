@@ -3,7 +3,7 @@ from deploy import call_zac
 from classifier import clf_predict_matrix
 
 # Call Zac's 3D CNN model to give us embeddings of the fMRIs, as well as guesses for good or bad
-zac_features, zac_scores = call_zac(txt_path='/media/data/Track_2/test_txt.txt', model_path='/media/data/models/brain/sl_resnet3d/new_backup3/')
+zac_features, zac_scores = call_zac(txt_path='/media/brainhack_data/Track_2/test_txt.txt', model_path='/media/brainhack_data/models/brain/sl_resnet3d/new_backup3/')
 
 # Pass embeddings to pretrained sklearn classifiers
 zac_rf_scores = clf_predict_matrix(zac_features, 'clfs/softmax_rf.clf')
